@@ -39,14 +39,35 @@ variable "sql_password" {
   description = "The administrator password of the SQL Server."
 }
 
-variable "start_ip_address" {
-  description = "Defines the start IP address used in your database firewall rule."
-  default     = "0.0.0.0"
+variable "firewall_rule_count" {
+  description = "The number of firewall rules to be created."
+  default     = "0"
 }
 
-variable "end_ip_address" {
-  description = "Defines the end IP address used in your database firewall rule."
-  default     = "0.0.0.0"
+variable "firewall_rule_prefix" {
+  description = "Specifies prefix for firewall rule names."
+  default     = "firewall-"
+}
+
+variable "firewall_rules" {
+  description = "The list of maps, describing firewall rules. Valid map items: name, start_ip, end_ip."
+  default     = []
+}
+
+variable "vnet_rule_count" {
+  description = "The number of vnet rules to be created."
+  default     = "0"
+}
+
+variable "vnet_rule_prefix" {
+  description = "Specifies prefix for vnet rule names."
+  default     = "sql-vnet-rule-"
+}
+
+variable "vnet_rules" {
+  description = "The list of maps, describing vnet rules. Valid map items: name, subnet_id."
+  type        = "list"
+  default     = []
 }
 
 variable "tags" {
