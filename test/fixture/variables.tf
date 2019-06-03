@@ -18,10 +18,14 @@ variable "sql_password" {
   default = "P@ssw0rd12345!"
 }
 
-variable "start_ip_address" {
-  default = "0.0.0.0"
+variable "firewall_rule_count" {
+  default = "0"
 }
 
-variable "end_ip_address" {
-  default = "255.255.255.255"
+variable "firewall_rule_prefix" {
+  default = "firewall-"
+}
+
+variable "firewall_rules" {
+  type = "list"
 }

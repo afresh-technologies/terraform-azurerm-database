@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,12 +13,19 @@ import (
 func TestTerraformDatabase(t *testing.T) {
 	t.Parallel()
 
+	var fwRuleCount = "1"
+	var fwRulePrefix = "testprefix-"
+	var fwRules = []map[string]string{{"name": "rule1", "start_ip": "0.0.0.0", "end_ip": "255.255.255.255"}}
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
 		TerraformDir: "./fixture",
 
 		// Variables to pass to our Terraform code using -var options
-		Vars: map[string]interface{}{},
+		Vars: map[string]interface{}{
+			"firewall_rule_count":  fwRuleCount,
+			"firewall_rule_prefix": fwRulePrefix,
+			"firewall_rules":       fwRules,
+		},
 	}
 
 	// This will init and apply the resources and fail the test if there are any errors
@@ -34,6 +42,21 @@ func TestTerraformDatabase(t *testing.T) {
 	maxRetries := 15
 	timeBetweenRetries := 5 * time.Second
 	description := fmt.Sprintf("Executing commands on database %s", dbConfig.server)
+
+	// Verify all firewall rules were created
+	firewallRuleIds := terraform.Output(t, terraformOptions, "firewall_rule_ids")
+	for _, rule := range fwRules {
+		name := fwRulePrefix + rule["name"]
+		if strings.Index(firewallRuleIds, name) == -1 {
+			t.Fatal("Error: wrong firewall rule id found")
+		}
+	}
+
+	// Verify vnet rules list is empty
+	vnetRuleIds := terraform.Output(t, terraformOptions, "vnet_rule_ids")
+	if len(vnetRuleIds) > 0 {
+		t.Fatal("Error: vnet_rule_ids is not empty")
+	}
 
 	// Verify that we can connect to the database and run SQL commands
 	retry.DoWithRetry(t, description, maxRetries, timeBetweenRetries, func() (string, error) {
